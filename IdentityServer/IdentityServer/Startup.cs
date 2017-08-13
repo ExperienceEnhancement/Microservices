@@ -2,36 +2,38 @@
 using IdentityServer3.Core.Configuration;
 using Owin;
 using System;
-using System.Collections.Generic;
-using System.Configuration;
-using System.Linq;
-using System.Web;
+using System.Security.Cryptography.X509Certificates;
 
 namespace IdentityServer
 {
     public class Startup
     {
-        private static readonly string IssuerUri = ConfigurationManager.AppSettings["IssuerUri"];
-
         public void Configuration(IAppBuilder app)
         {
             app.Map("/identity", idsrvApp =>
+            {
+                var idServerServiceFactory = new IdentityServerServiceFactory()
+                .UseInMemoryClients(Clients.Get())
+                .UseInMemoryUsers(Users.Get())
+                .UseInMemoryScopes(Scopes.Get());
+
+
+                var options = new IdentityServerOptions
                 {
-                    var idSreverServiceFactory = new IdentityServerServiceFactory()
-                        .UseInMemoryClients(Clients.Get())
-                        .UseInMemoryScopes(Scopes.Get())
-                        .UseInMemoryUsers(Users.Get());
+                    Factory = idServerServiceFactory,
+                    SiteName = "Identity Server",
+                    IssuerUri = "https://identityserversts/identity",
+                    PublicOrigin = "https://localhost:44311/",
+                    SigningCertificate = LoadCertificate()
+                };
 
-                    var options = new IdentityServerOptions()
-                    {
-                        Factory = idSreverServiceFactory,
-                        SiteName = "Book store",
-                        IssuerUri = IssuerUri,
-                        PublicOrigin = 
-                    };
+                idsrvApp.UseIdentityServer(options);
+            });
+        }
 
-                    idsrvApp.UseIdentityServer(options);
-                });
+        X509Certificate2 LoadCertificate()
+        {
+            return new X509Certificate2($@"{AppDomain.CurrentDomain.BaseDirectory}\Certificates\idsrv3test.pfx", "idsrv3test");
         }
     }
 }

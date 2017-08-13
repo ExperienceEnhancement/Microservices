@@ -14,8 +14,8 @@ namespace IdentityServer.Config
             {
                 new Scope
                 {
-                    Name = "bookstore",
-                    DisplayName = "Book Store",
+                    Name = "booklover",
+                    DisplayName = "Book Lover",
                     Description = "",
                     Type = ScopeType.Resource
                 }
